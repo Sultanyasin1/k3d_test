@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-nextjs-service
+  namespace: playground1
+spec:
+  selector:
+    app: my-nextjs-app
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: LoadBalancer
+
+  
+  #kind: Service	We want a Service
+  #selector: app: my-nextjs-app	"Send traffic to any Pod with this label"
+  #ports: - port: 80	"Listen for traffic on port 80"
+  #targetPort: 3000	"Forward that traffic to port 3000 inside the Pod"
+  #type: LoadBalancer	"Create an external entry point so I can access it from my browser"
