@@ -7,7 +7,7 @@ metadata:
   # separate different projects inside the same cluster
   namespace: playground1
 spec:
-  replicas: 3
+  replicas: 4
   selector:
     matchLabels:
 #selector: matchLabels: app: test . These Pods belong to this Deployment"
