@@ -74,7 +74,7 @@ jobs:
       - name: Update GitOps repo
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git gitops
+          git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH2 }}.git gitops
           cd gitops/manifests
           sed -i "s|image:.*my-nextjs-app:.*|image: $IMAGE_NAME:$SHORT_SHA|g" deployment.yaml
           git config user.name "GitHub Actions Bot"
