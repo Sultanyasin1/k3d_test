@@ -46,7 +46,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_GITOPS }}
-
       # 8. Bygg och tagga Docker-image
       - name: Build Docker image
         run: |
@@ -54,14 +53,16 @@ jobs:
           docker build -t $IMAGE_NAME:$SHORT_SHA .
           docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
 
-      # 9. (Valfritt) Scanna imagen med Trivy
+      # 9. Scanna lokal image med Trivy
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: "table"
-          exit-code: "0" # Varna men stoppa inte bygget
+          exit-code: "0"
           severity: "CRITICAL,HIGH"
+          scan-type: "image"
+          trivy-args: "--docker"
 
       # 10. Pusha till Docker Hub
       - name: Push Docker image
