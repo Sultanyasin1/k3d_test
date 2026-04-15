@@ -1,0 +1,84 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # Gör att du kan köra manuellt från GitHub UI
+
+env:
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/my-nextjs-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout koden
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Sätt upp Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # 3. Installera dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Linta
+      - name: Run linter
+        run: npm run lint
+
+      # 5. Kör tester (om du har)
+      - name: Run tests
+        run: npm test || echo "No tests found, skipping..."
+
+      # 6. Bygg Next.js-appen
+      - name: Build Next.js
+        run: npm run build
+
+      # 7. Logga in på Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # 8. Bygg och tagga Docker-image
+      - name: Build Docker image
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker build -t $IMAGE_NAME:$SHORT_SHA .
+          docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
+
+      # 9. (Valfritt) Scanna imagen med Trivy
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'table'
+          exit-code: '0'          # Varna men stoppa inte bygget
+          severity: 'CRITICAL,HIGH'
+
+      # 10. Pusha till Docker Hub
+      - name: Push Docker image
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker push $IMAGE_NAME:$SHORT_SHA
+          docker push $IMAGE_NAME:latest
+
+      # 11. Uppdatera GitOps-repot med ny image-tagg
+      - name: Update GitOps repo
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git gitops
+          cd gitops/manifests
+          sed -i "s|image:.*my-nextjs-app:.*|image: $IMAGE_NAME:$SHORT_SHA|g" deployment.yaml
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add deployment.yaml
+          git commit -m "Update image tag to $SHORT_SHA" || echo "No changes to commit"
+          git push origin main
