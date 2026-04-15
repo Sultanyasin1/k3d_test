@@ -40,41 +40,41 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # 7. Logga in på Docker Hub
+      # 7. Sätt kort SHA som miljövariabel (så vi använder samma överallt)
+      - name: Set short SHA
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      # 8. Logga in på Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_GITOPS }} 
-          
-      # 8. Bygg och tagga Docker-image
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_GITOPS }}
+
+      # 9. Bygg och tagga Docker-image
       - name: Build Docker image
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
           docker build -t $IMAGE_NAME:$SHORT_SHA .
           docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
 
-      # 9. Pusha till Docker Hub (FLYTTAD HIT)
+      # 10. Pusha till Docker Hub
       - name: Push Docker image
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
           docker push $IMAGE_NAME:$SHORT_SHA
           docker push $IMAGE_NAME:latest
 
-      # 10. Scanna imagen med Trivy (NU EFTER PUSH)
+      # 11. Scanna imagen med Trivy (nu efter push, använder samma SHORT_SHA)
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
           format: "table"
-          exit-code: "0"
+          exit-code: "0" # Varna men stoppa inte bygget
           severity: "CRITICAL,HIGH"
 
-      # 11. Uppdatera GitOps-repot ...
-      # 11. Uppdatera GitOps-repot med ny image-tagg
+      # 12. Uppdatera GitOps-repot med ny image-tagg
       - name: Update GitOps repo
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
           git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH2 }}.git gitops
           cd gitops/manifests
           sed -i "s|image:.*my-nextjs-app:.*|image: $IMAGE_NAME:$SHORT_SHA|g" deployment.yaml
