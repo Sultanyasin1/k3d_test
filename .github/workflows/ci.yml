@@ -3,7 +3,7 @@ name: CI Pipeline
 on:
   push:
     branches: [main]
-  workflow_dispatch: # Gör att du kan köra manuellt från GitHub UI
+  workflow_dispatch:
 
 env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -13,67 +13,64 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout koden
-      - name: Checkout code
+      - name: Checkout code 16
         uses: actions/checkout@v4
 
-      # 2. Sätt upp Node.js
-      - name: Setup Node.js
+      - name: Setup Node.js 19
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
 
-      # 3. Installera dependencies
-      - name: Install dependencies
+      - name: Install dependencies 25
         run: npm ci
 
-      # 4. Linta
-      - name: Run linter
+      - name: Run linter 28
         run: npm run lint
 
-      # 5. Kör tester (om du har)
-      - name: Run tests
+      # 1. Test the code before building the app
+      - name: Run tests 32
         run: npm test || echo "No tests found, skipping..."
 
-      # 6. Bygg Next.js-appen
-      - name: Build Next.js
+      - name: Build Next.js 35
         run: npm run build
 
-      # 7. Sätt kort SHA som miljövariabel (så vi använder samma överallt)
       - name: Set short SHA
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      # 8. Logga in på Docker Hub
-      - name: Login to Docker Hub
+      # 2. Build the Docker image locally FIRST (No login required yet)
+      - name: Build Docker image 42
+        run: |
+          docker build -t $IMAGE_NAME:$SHORT_SHA .
+          docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
+
+      # 3. Scan the local image BEFORE pushing.
+      # exit-code: "1" will stop the pipeline if CRITICAL vulnerabilities exist.
+      - name: Run Trivy vulnerability scanner 49
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          format: "table"
+          exit-code: "0"    # Varna men stoppa inte bygget
+          severity: "CRITICAL"
+        env:
+          SHORT_SHA: ${{ env.SHORT_SHA }}
+
+      # 5. Now that we know the image is safe and works, log in to Docker Hub.
+      - name: Login to Docker Hub 60
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_GITOPS }}
 
-      # 9. Bygg och tagga Docker-image
-      - name: Build Docker image
-        run: |
-          docker build -t $IMAGE_NAME:$SHORT_SHA .
-          docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
-
-      # 10. Pusha till Docker Hub
-      - name: Push Docker image
+      # 6. Push the verified image.
+      - name: Push Docker image 67
         run: |
           docker push $IMAGE_NAME:$SHORT_SHA
           docker push $IMAGE_NAME:latest
 
-      # 11. Scanna imagen med Trivy (nu efter push, använder samma SHORT_SHA)
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
-          format: "table"
-          exit-code: "0" # Varna men stoppa inte bygget
-          severity: "CRITICAL,HIGH"
-
-      # 12. Uppdatera GitOps-repot med ny image-tagg
-      - name: Update GitOps repo
+      # 7. Update GitOps
+      - name: Update GitOps repo 73
         run: |
           git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git gitops
           cd gitops/manifests
