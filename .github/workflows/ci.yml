@@ -51,7 +51,7 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
           format: "table"
-          exit-code: "0"    # Varna men stoppa inte bygget
+          exit-code: "0" # Varna men stoppa inte bygget
           severity: "CRITICAL"
         env:
           SHORT_SHA: ${{ env.SHORT_SHA }}

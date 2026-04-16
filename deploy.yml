@@ -1,0 +1,24 @@
+ #TODO: REMEMBER THIS ROLE selector.matchLabels.app MUST be the same as the spec.template.metadata.labels.app. Selector only work with labels. If there is no label, selector can not find the Pods. If there is a label but it does not match the selector, selector can not find the Pods. Selector job is to find  spec.template.metadata.labels.app: test Pods. If there is no spec.template.metadata.labels.app: test, selector can not find the Pods. If there is spec.template.metadata.labels.app: test but selector.matchLabels.app: test1, selector can not find the Pods. Selector only work with labels. If there is no label, selector can not find the Pods. If there is a label but it does not match the selector, selector can not find the Pods. Selector job is to find  spec.template.metadata.labels.app: test Pods. If there is no spec.template.metadata.labels.app: test, selector can not find the Pods. If there is spec.template.metadata.labels.app: test but selector.matchLabels.app: test1, selector can not find the Pods. Selector only work with labels. If there is no label, selector can not find the Pods. If there is a label but it does not match the selector, selector can not find the Pods. Selector job is to find  spec.template.metadata.labels.app: test Pods. If there is no spec.template.metadata.labels.app: test, selector can not find the Pods. If there is spec.template.metadata.labels.app: test but selector.matchLabels.app.
+apiVersion: apps/pds-v1
+kind: Deployment
+metadata:
+  name: pds-deployment
+  namespace: pds-v1-namespace
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+    #OBS: must be the same as the labels in the template
+      app: pds-app
+  template:
+    metadata:
+      labels:
+        #OBS : must be the same as the selector.matchLabels
+        app: pds-app 
+    spec:
+      containers:
+        - name: pds-container
+          image: docker-username/imagename:tag
+          ports:
+            - containerPort: portnumber
+

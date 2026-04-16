@@ -1,0 +1,13 @@
+appVersion: apps/v1
+kind: Service
+metadata:
+  name: service-name
+  namespace: must-be-the-same-as-deployment-namespace
+
+spec: 
+  selector:
+    app: must-be-the-same-as-deployment-selector-matchLabels-app
+  ports:
+    - port: 80
+      targetPort: where the container is listening (containerPort in deployment.yaml)
+  type: LoadBalancer 

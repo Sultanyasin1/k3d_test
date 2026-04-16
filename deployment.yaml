@@ -1,3 +1,4 @@
+#Deployment → creates Pods → Service finds Pods using labels. -------------- Labels identify Pods, selectors find them
 #	Which Kubernetes API version to use (for Deployments, use apps/v1)
 apiVersion: apps/v1
 kind: Deployment
@@ -6,18 +7,21 @@ metadata:
   name: test-deployment
   # separate different projects inside the same cluster
   namespace: playground1
+#“How many Pods and how to manage them”
 spec:
+#replicas: 2 → create 2 Pods
   replicas: 4
   selector:
     matchLabels:
 #selector: matchLabels: app: test . These Pods belong to this Deployment"
       app: test
-#	The blueprint for each Pod
+#	The blueprint for each Pod; This is literally how each Pod will look like
   template:
     metadata:
 #	A sticker on each Pod so the selector can find it
       labels:
         app: test
+# spec.template.spec : “What’s inside the Pod”        
     spec:
 #	The list of containers inside the Pod
       containers:
@@ -26,3 +30,9 @@ spec:
           image: sultanss/test:v1
           ports:
             - containerPort: 3000
+
+#Deployment
+#   ↓ creates
+#Pods (with labels)
+#   ↑ found by
+#Selector            
