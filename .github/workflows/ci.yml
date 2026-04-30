@@ -70,13 +70,13 @@ jobs:
           docker push $IMAGE_NAME:latest
 
       # 7. Update GitOps
-      - name: Update GitOps repo 73
+      - name: Update GitOps repo 73      
         run: |
-          git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git gitops
-          cd gitops/manifests
-          sed -i "s|image:.*nextjs:.*|image: $IMAGE_NAME:$SHORT_SHA|g" deployment.yaml
+          git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git argocddeploytest
+          cp k3d_test/deployment.yaml argocddeploytest/manifests/deployment.yaml
+          cd argocddeploytest
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add deployment.yaml
+          git add manifests/deployment.yaml
           git commit -m "Update image tag to $SHORT_SHA" || echo "No changes to commit"
           git push origin master

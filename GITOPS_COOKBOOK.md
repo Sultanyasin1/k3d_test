@@ -174,6 +174,12 @@ git commit -m "Initial GitOps manifests"
 git branch -M main
 git remote add origin https://github.com/YOUR_GITHUB_USERNAME/my-gitops-config.git
 git push -u origin main
+
+_______________
+
+git remote set-url origin git@github.com:Sultanyasin1/argocddeploytest.git
+
+_________________
 \`\`\`
 
 ## 10. ARGO CD: Connect App
