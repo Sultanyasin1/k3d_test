@@ -10,7 +10,7 @@ metadata:
 #“How many Pods and how to manage them”
 spec:
 #replicas: 2 → create 2 Pods
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
 #selector: matchLabels: app: test . These Pods belong to this Deployment"
