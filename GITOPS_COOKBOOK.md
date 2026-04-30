@@ -56,6 +56,14 @@ docker push YOUR_DOCKER_USERNAME/my-nextjs-app:v1
 
 ## 4. KUBERNETES: k3d Cluster
 
+1- install k3d:
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+2- install kubectl : 
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"  
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+
 \`\`\`bash
 # Create cluster
 k3d cluster create my-cluster --servers 1 --agents 1 -p "8081:80@loadbalancer"

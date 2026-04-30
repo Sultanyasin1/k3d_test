@@ -10,7 +10,7 @@ metadata:
 #“How many Pods and how to manage them”
 spec:
 #replicas: 2 → create 2 Pods
-  replicas: 4
+  replicas: 2
   selector:
     matchLabels:
 #selector: matchLabels: app: test . These Pods belong to this Deployment"
@@ -27,7 +27,7 @@ spec:
       containers:
         - name: test-container
 #	Which Docker image to use for this container
-          image: sultanss/test:v1
+          image: sultanss/nextjs:v1
           ports:
             - containerPort: 3000
 
