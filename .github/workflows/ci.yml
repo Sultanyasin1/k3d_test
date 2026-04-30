@@ -73,7 +73,7 @@ jobs:
       - name: Update GitOps repo 73      
         run: |
           git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git argocddeploytest
-          cp k3d_test/deployment.yaml argocddeploytest/manifests/deployment.yaml
+          cp deployment.yaml argocddeploytest/manifests/deployment.yaml
           cd argocddeploytest
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
