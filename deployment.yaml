@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
 #Deployments name
-  name: test-deployment
+  name: my-nextjs-deployment
   # separate different projects inside the same cluster
   namespace: playground1
 #“How many Pods and how to manage them”
