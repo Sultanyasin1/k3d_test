@@ -147,13 +147,20 @@ kubectl logs <POD_NAME> -n my-playground
 kubectl create namespace argocd
 
 # Install
+read  : https://argo-cd.readthedocs.io/en/stable/
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl apply -k https://github.com/argoproj/argo-cd/manifests/crds\?ref\=stable
+
+minst problems; kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml 
 
 # Wait for pods (Ctrl+C to stop watching)
 kubectl get pods -n argocd -w
 
 # Get password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+AauVDCV-RoCW8F7H
 
 # Port forward (in a new terminal)
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -165,6 +172,7 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 Create a repo on GitHub named `my-gitops-config`.
 Inside it, create a folder `manifests` and add the `deployment.yaml` and `service.yaml` files.
+
 
 \`\`\`bash
 # Push files to GitHub

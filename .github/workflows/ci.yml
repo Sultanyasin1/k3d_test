@@ -6,12 +6,19 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/my-nextjs-app
+  IMAGE_OWNER: ${{github.repository_owner }}
+  IMAGE_NAME: my-nextjs-app
+  REGISTRY: ghcr.io
+  FULL_IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout code 16
         uses: actions/checkout@v4
@@ -41,15 +48,15 @@ jobs:
       # 2. Build the Docker image locally FIRST (No login required yet)
       - name: Build Docker image 42
         run: |
-          docker build -t $IMAGE_NAME:$SHORT_SHA .
-          docker tag $IMAGE_NAME:$SHORT_SHA $IMAGE_NAME:latest
+          docker build -t ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }} .
+          docker tag ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }} ${{ env.FULL_IMAGE_NAME }}:latest
 
       # 3. Scan the local image BEFORE pushing.
       # exit-code: "1" will stop the pipeline if CRITICAL vulnerabilities exist.
       - name: Run Trivy vulnerability scanner 49
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          image-ref: ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }}
           format: "table"
           exit-code: "0" # Varna men stoppa inte bygget
           severity: "CRITICAL"
@@ -66,8 +73,8 @@ jobs:
       # 6. Push the verified image.
       - name: Push Docker image 67
         run: |
-          docker push $IMAGE_NAME:$SHORT_SHA
-          docker push $IMAGE_NAME:latest
+          docker push ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          docker push ${{ env.FULL_IMAGE_NAME }}:latest
 
       # 7. Update GitOps
       - name: Update GitOps repo 73      
