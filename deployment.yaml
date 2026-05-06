@@ -32,7 +32,7 @@ spec:
           
           #image: sultanss/nextjs:v1
           image: ghcr.io/sultanyasin1/my-nextjs-app:5406a29
-          #image: ghcr.io/sultansyasin1/my-nextjs-app:latest 
+          #image: ghcr.io/sultansyasin1/my-nextjs-app:latest #return to this after testing
           ports:
             - containerPort: 3000
           #env:
