@@ -29,8 +29,10 @@ spec:
       containers:
         - name: test-container
 #	Which Docker image to use for this container
+          
           #image: sultanss/nextjs:v1
-          image: ghcr.io/sultansyasin1/my-nextjs-app:latest 
+          image: ghcr.io/sultanyasin1/my-nextjs-app:5406a29
+          #image: ghcr.io/sultansyasin1/my-nextjs-app:latest 
           ports:
             - containerPort: 3000
           #env:
