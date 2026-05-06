@@ -6,78 +6,77 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_OWNER: ${{github.repository_owner }}
+  # 1. Enskilda variabler (refereras aldrig till varandra här)
+  IMAGE_OWNER: ${{ github.repository_owner }}  # Ersätts automatiskt med ditt användarnamn
   IMAGE_NAME: my-nextjs-app
   REGISTRY: ghcr.io
-  FULL_IMAGE_NAME: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    # 2. Rättigheter för att pusha till GHCR
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout code 16
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 19
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
 
-      - name: Install dependencies 25
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run linter 28
+      - name: Run linter
         run: npm run lint
 
-      # 1. Test the code before building the app
-      - name: Run tests 32
+      - name: Run tests
         run: npm test || echo "No tests found, skipping..."
 
-      - name: Build Next.js 35
+      - name: Build Next.js
         run: npm run build
 
       - name: Set short SHA
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      # 2. Build the Docker image locally FIRST (No login required yet)
-      - name: Build Docker image 42
+      # 3. Bygg och tagga – konstruera sökvägen inline
+      - name: Build Docker image
         run: |
-          docker build -t ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }} .
-          docker tag ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }} ${{ env.FULL_IMAGE_NAME }}:latest
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }} .
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }} \
+                     ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:latest
 
-      # 3. Scan the local image BEFORE pushing.
-      # exit-code: "1" will stop the pipeline if CRITICAL vulnerabilities exist.
-      - name: Run Trivy vulnerability scanner 49
+      # 4. Sårbarhetsskanning (valfritt)
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
           format: "table"
-          exit-code: "0" # Varna men stoppa inte bygget
+          exit-code: "0"
           severity: "CRITICAL"
-        env:
-          SHORT_SHA: ${{ env.SHORT_SHA }}
 
-      # 5. Now that we know the image is safe and works, log in to Docker Hub.
-      - name: Login to Docker Hub 60
+      # 5. Logga in på GHCR – ersätter Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_GITOPS }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
-      # 6. Push the verified image.
-      - name: Push Docker image 67
+      # 6. Pusha till GHCR – konstruera sökvägen inline
+      - name: Push Docker image to GHCR
         run: |
-          docker push ${{ env.FULL_IMAGE_NAME }}:${{ env.SHORT_SHA }}
-          docker push ${{ env.FULL_IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:latest
 
-      # 7. Update GitOps
-      - name: Update GitOps repo 73      
+      # 7. Uppdatera GitOps-repot – kopiera deployment.yaml med rätt image
+      - name: Update GitOps repo
         run: |
           git clone https://${{ secrets.GITOPS_REPO_PAT }}@github.com/${{ secrets.GITOPS_REPO_PATH }}.git argocddeploytest
           cp deployment.yaml argocddeploytest/manifests/deployment.yaml
@@ -85,5 +84,5 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add manifests/deployment.yaml
-          git commit -m "Update image tag to $SHORT_SHA" || echo "No changes to commit"
+          git commit -m "Update image tag to ${{ env.SHORT_SHA }}" || echo "No changes to commit"
           git push origin master
