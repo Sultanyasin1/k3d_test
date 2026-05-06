@@ -4,9 +4,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
 #Deployments name
-  name: my-nextjs-deployment
+  name: fe-deployment
   # separate different projects inside the same cluster
-  namespace: playground1
+  namespace: pds
 #“How many Pods and how to manage them”
 spec:
 #replicas: 2 → create 2 Pods
