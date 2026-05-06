@@ -7,7 +7,8 @@ on:
 
 env:
   # 1. Enskilda variabler (refereras aldrig till varandra här)
-  IMAGE_OWNER: ${{ github.repository_owner }}  # Ersätts automatiskt med ditt användarnamn
+  IMAGE_OWNER: ${{ sultanyasin1 }}  
+  #IMAGE_OWNER: ${{ github.repository_owner }}  
   IMAGE_NAME: my-nextjs-app
   REGISTRY: ghcr.io
 
