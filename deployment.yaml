@@ -5,7 +5,7 @@ kind: Deployment
 metadata:
 #Deployments name
   name: fe-deployment
-  # separate different projects inside the same cluster
+  # separate different projects inside the same cluster_
   namespace: pds
 #“How many Pods and how to manage them”
 spec:
