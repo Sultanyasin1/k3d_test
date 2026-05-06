@@ -24,6 +24,8 @@ spec:
 # spec.template.spec : “What’s inside the Pod”        
     spec:
 #	The list of containers inside the Pod
+      imagePullSecrets:          # <-- Lägg till detta!
+        - name: ghcr-secret
       containers:
         - name: test-container
 #	Which Docker image to use for this container
