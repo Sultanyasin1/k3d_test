@@ -76,6 +76,12 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:latest
 
+      # 7. Uppdatera GitOps-repot – kopiera deployment.yaml med rätt image (  yq kan på ett säkert sätt ändra en specifik nyckel i en YAML-fil, utan att riskera att förstöra filens struktur.)
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          
       # 7. Uppdatera GitOps-repot – kopiera deployment.yaml med rätt image
       - name: Update GitOps repo
         run: |
