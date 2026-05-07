@@ -31,8 +31,9 @@ spec:
 #	Which Docker image to use for this container
           
           #image: sultanss/nextjs:v1
-          image: ghcr.io/sultanyasin1/my-nextjs-app:5406a29
-          #image: ghcr.io/sultansyasin1/my-nextjs-app:latest #return to this after testing
+          #image: ghcr.io/sultanyasin1/my-nextjs-app:5406a29
+          image: ghcr.io/sultansyasin1/my-nextjs-app:latest #return to this after testing
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           #env:
