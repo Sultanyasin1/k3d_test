@@ -5,7 +5,7 @@ metadata:
   namespace: pds
 spec:
   selector:
-    app: my-nextjs-app
+    app: test
   ports:
     - port: 80
       targetPort: 3000

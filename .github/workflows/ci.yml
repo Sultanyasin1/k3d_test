@@ -105,5 +105,5 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add manifests/deployment.yaml
-          git commit -m "Update image tag to ${{ env.SHORT_SHA }}" || echo "No changes to commit"
+          git commit -m "ci: Update image to ${{ env.IMAGE_DIGEST }} (tag: ${{ env.SHORT_SHA }})"
           git push origin master
