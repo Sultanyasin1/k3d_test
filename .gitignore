@@ -35,6 +35,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+k3d_test/ghcr-secret.yaml
+secrets.yaml
+ghcr-secret.yaml
 
 
 # vercel

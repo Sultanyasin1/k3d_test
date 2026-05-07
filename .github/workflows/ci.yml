@@ -81,7 +81,21 @@ jobs:
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
-          
+
+
+      # 8: Hämta image-digesten
+      - name: Get image digest
+        run: |
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' \
+                   ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ env.SHORT_SHA }})
+          echo "IMAGE_DIGEST=$DIGEST" >> $GITHUB_ENV    
+
+      # 9. Uppdatera deployment.yaml med image-digesten
+      - name: Update deployment.yaml with image digest
+        run: |
+           yq e '.spec.template.spec.containers[0].image = "${{ env.IMAGE_DIGEST }}"' -i deployment.yaml
+
+
       # 7. Uppdatera GitOps-repot – kopiera deployment.yaml med rätt image
       - name: Update GitOps repo
         run: |
