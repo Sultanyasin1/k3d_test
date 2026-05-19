@@ -32,10 +32,21 @@ spec:
           
           #image: sultanss/nextjs:v1
           #image: ghcr.io/sultanyasin1/my-nextjs-app:5406a29
-          image: ghcr.io/sultanyasin1/my-nextjs-app:latest #return to this after testing
+          image: ghcr.io/sultanyasin1/my-nextjs-app:latest
           #imagePullPolicy: Always
           ports:
             - containerPort: 3000
+          env:
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DATABASE_PASSWORD
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: API_TOKEN
           
 
 
@@ -61,27 +72,17 @@ spec:
 
 
             
-          #env:
-          #  - name: username
-          #    valueFrom:
-          #      secretKeyRef:
-          #        name: my-nextjs-secret
-          #        key: username
-          #  - name: DATABASE_PASSWORD
-          #    valueFrom:
-          #      secretKeyRef:
-          #        name: my-nextjs-secret
-          #        key: DATABASE_PASSWORD
-          #  - name: API_PRIVATE_KEY
-          #    valueFrom:
-          #      secretKeyRef:
-          #        name: my-nextjs-secret
-          #        key: API_PRIVATE_KEY
-          #  - name: API_PUBLIC_KEY
-          #    valueFrom:
-          #      secretKeyRef:
-          #        name: my-nextjs-secret
-          #        key: API_PUBLIC_KEY
+          env:
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DATABASE_PASSWORD
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: API_TOKEN
 #Deployment
 #   ↓ creates
 #Pods (with labels)
